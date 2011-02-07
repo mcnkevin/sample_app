@@ -23,7 +23,7 @@ describe UsersController do
 		
 			@users = [@user, second, third]
 			30.times do
-				@user << Factory(:user, :email => Factory.next(:email))
+				@users << Factory(:user, :email => Factory.next(:email))
 			end		
 		end
 		
@@ -187,20 +187,6 @@ describe UsersController do
   end
   
   describe "GET 'show'" do
-  
-	it "should be successful" do
-		get :new
-		response.should be_success
-	end
-	
-	it "should have the right title" do
-		get :new
-		response.should have_selector("title", :content => "Sign up")
-	end
-  
-  end
-  
-  describe "GET 'show'" do
 
 	before(:each) do
 		@user = Factory(:user)
@@ -230,8 +216,17 @@ describe UsersController do
 		get :show, :id => @user
 		response.should have_selector("h1>img",:class => "gravatar")
 	end
+	
+	it "should show the user's microposts" do
+		mp1 = Factory(:micropost, :user => @user, :content => "Foo bar")
+		mp2 = Factory(:micropost, :user => @user, :content => "Baz quux")
+		
+		get :show, :id => @user
+		response.should have_selector("span.content", :content => mp1.content)
+		response.should have_selector("span.content", :content => mp2.content)
+	end
   end
-  
+    
   describe "GET 'edit'" do
 	
 	before(:each) do
@@ -255,48 +250,49 @@ describe UsersController do
 		response.should have_selector("a", :href => gravatar_url,
 										   :content => "change")
 	end
-  end
   
+    end
+	
   describe "authentication of edit/update pages" do
-	
-	before(:each) do
-		@user = Factory(:user)
-	end
-	
-	describe "for non-signed-in users" do
-	
-		it "should deny access to 'edit'" do
-			get :edit, :id => @user
-			response.should redirect_to(signin_path)
-		end
-		
-		it "should deny access to 'update'" do
-			put :update, :id => @user, :user => {}
-			response.should redirect_to(signin_path)
-		end
-	end
-	
-	describe "for signed-in users" do
 		
 		before(:each) do
-			wrong_user = Factory(:user, :email => "user@example.net")
-			test_sign_in(wrong_user)
+			@user = Factory(:user)
 		end
 		
-		it "should require matching users for 'edit'" do
-			get :edit, :id => @user
-			response.should redirect_to(root_path)
+		describe "for non-signed-in users" do
+		
+			it "should deny access to 'edit'" do
+				get :edit, :id => @user
+				response.should redirect_to(signin_path)
+			end
+			
+			it "should deny access to 'update'" do
+				put :update, :id => @user, :user => {}
+				response.should redirect_to(signin_path)
+			end
 		end
 		
-		it "should require matching users for 'update'" do
-			put :update, :id => @user, :user => {}
-			response.should redirect_to(root_path)
+		describe "for signed-in users" do
+			
+			before(:each) do
+				wrong_user = Factory(:user, :email => "user@example.net")
+				test_sign_in(wrong_user)
+			end
+			
+			it "should require matching users for 'edit'" do
+				get :edit, :id => @user
+				response.should redirect_to(root_path)
+			end
+			
+			it "should require matching users for 'update'" do
+				put :update, :id => @user, :user => {}
+				response.should redirect_to(root_path)
+			end
 		end
-	end
-  end
-  
+	  end
+
   describe "DELETE 'destroy'" do
-  
+    
 	before(:each) do
 		@user = Factory(:user)
 	end
@@ -305,7 +301,7 @@ describe UsersController do
 	
 		it "should deny access" do
 			delete :destroy, :id => @user
-			response.should redirect_to(root_path)
+			response.should redirect_to(signin_path)
 		end
 	end
 	
@@ -335,7 +331,7 @@ describe UsersController do
 			delete :destroy, :id => @user
 			response.should redirect_to(users_path)
 		end
-	end
+	end	
   end
-		
+
 end
