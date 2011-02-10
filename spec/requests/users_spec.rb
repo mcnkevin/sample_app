@@ -18,7 +18,10 @@ describe "Users" do
 			response.should have_selector("div#error_explanation")
 		  end.should_not change(User, :count)
 		end
-		
+	end
+  
+  describe "success" do
+  
 		it "should make a new user" do
 			lambda do
 				visit signup_path
@@ -33,7 +36,7 @@ describe "Users" do
 			end.should change(User, :count).by(1)
 		end
 	end
-  end
+end
   
   describe "sign in/out" do
 	
@@ -59,7 +62,7 @@ describe "Users" do
         controller.should be_signed_in
         click_link "Sign out"
         controller.should_not be_signed_in
-      end
+    end
   end
-  end
+end
 end
